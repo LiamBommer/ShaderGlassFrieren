@@ -21,6 +21,8 @@
 - [x] 修复默认媒体音量初始化为 20，并为浏览器有声自动播放拦截增加首次交互恢复
 - [x] 将进入页面后的音频状态设为默认静音，并在点击静音按钮或调整音量时自动取消静音
 - [x] 初始化 Git 项目并完成构建与仓库状态验证
+- [x] 将 Chrome 当前 Preset1 参数固化为仓库内的 `src/default-preset.js`
+- [x] 让应用启动时读取源码默认预设，并完成构建验证
 
 ## Review
 
@@ -57,3 +59,4 @@
 - 页面进入后的媒体状态现在默认为静音、音量保持 20；点击圆形静音按钮会切换为未静音，用户调整音量滑块时会自动取消静音。已有 Preset1 的旧静音值只迁移一次，不影响其他预设。
 - 网页标签标题由 `index.html` 中的 `<title>` 设置为 `Glasshaus — A different light`。
 - 已在项目目录初始化 Git 仓库，默认分支为 `main`；添加 `.gitignore` 忽略 `node_modules`、`dist` 和日志，未自动创建首个 commit。
+- 已从 Chrome 当前 `Preset1` 导出参数到 `src/default-preset.js`；应用启动时读取源码预设，且已通过 `node --check`、`npm run build` 和本地页面实际加载验证。

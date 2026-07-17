@@ -8,7 +8,7 @@
 
 [打开在线 Demo](https://liambommer.github.io/ShaderGlassFrieren/)
 
-项目通过 GitHub Actions 构建，并发布到 GitHub Pages。每次推送 `main` 分支后会自动重新部署。
+
 
 ## 本地运行
 

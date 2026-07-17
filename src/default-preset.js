@@ -2,8 +2,8 @@
  * Source-controlled online default.
  *
  * These values were exported from the Preset1 state in the local Demo.
- * Keep the control IDs aligned with the controls in index.html so the same
- * object can initialize the UI, the built-in Default preset, and Preset1.
+ * Keep the control IDs aligned with the controls in index.html. The built-in
+ * Default preset intentionally remains defined by the original HTML values.
  */
 export const PRESET1_DEFAULT = Object.freeze({
   name: 'Preset1',

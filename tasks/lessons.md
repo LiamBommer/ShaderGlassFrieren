@@ -12,3 +12,4 @@
 - 初始静音需求要同时同步状态变量、隐藏 checkbox、可见按钮的 `aria-pressed` 和视觉 class；音量滑块的用户事件需要显式取消静音，预设/重置的程序化更新则不能误触发取消静音。
 - 调整媒体纳入范围时，除了新增 `.gitignore` 规则，还要从未推送的历史中移除被排除文件；`.gitattributes` 只保留实际需要使用 LFS 的媒体，避免远程仓库继续包含不需要的素材。
 - 修改文件后必须先检查 `git status` 和 `git diff`，确认改动已经 commit，再判断是否已经 push 到远程；工作区里的 `M` 不代表远程仓库已经更新。
+- 项目内置 `Default` 与用户 starter `Preset1` 是两个独立配置：Default 必须保留原始初始值，Chrome 导出的配置只能写入 Preset1，并在首次进入时选中 Preset1。

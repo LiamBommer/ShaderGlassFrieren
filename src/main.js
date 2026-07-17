@@ -3,8 +3,6 @@ import { PRESET1_DEFAULT } from './default-preset.js';
 import './style.css';
 
 const canvas = document.querySelector('#shader-canvas');
-const sourceDefaults = PRESET1_DEFAULT.controls;
-const sourceNumber = (id) => Number(sourceDefaults[id]);
 
 // VideoTexture 需要一个已经就绪的外部纹理才能让最终 pass 正常绘制。
 // 初始状态保持不可见，避免空媒体通道阻断最终 pass；上传视频时再显式启用。
@@ -15,9 +13,9 @@ const preset = {
       type: 'Swirl',
       id: 'white-swirl',
       props: {
-        colorA: sourceDefaults['swirl-color-a'],
-        colorB: sourceDefaults['swirl-color-b'],
-        detail: sourceNumber('swirl-detail'),
+        colorA: '#ffffff',
+        colorB: '#f0f0f0',
+        detail: 1.7,
       },
     },
     {
@@ -48,38 +46,38 @@ const preset = {
       type: 'ChromaFlow',
       id: 'cursor-bloom',
       props: {
-        baseColor: sourceDefaults['chroma-base'],
-        downColor: sourceDefaults['chroma-down'],
-        leftColor: sourceDefaults['chroma-left'],
-        momentum: sourceNumber('chroma-momentum'),
-        radius: sourceNumber('chroma-radius'),
-        rightColor: sourceDefaults['chroma-right'],
-        upColor: sourceDefaults['chroma-up'],
+        baseColor: '#ffffff',
+        downColor: '#4642ff',
+        leftColor: '#56c2fc',
+        momentum: 13,
+        radius: 3.5,
+        rightColor: '#5b4fff',
+        upColor: '#7f66ff',
         intensity: 1,
-        opacity: sourceNumber('image-opacity') * 0.01,
+        opacity: 0.2,
       },
     },
     {
       type: 'FlutedGlass',
       id: 'fluted-glass',
       props: {
-        aberration: sourceNumber('glass-aberration'),
-        angle: sourceNumber('glass-angle'),
-        frequency: sourceNumber('glass-frequency'),
-        highlight: sourceNumber('glass-highlight'),
-        highlightSoftness: sourceNumber('glass-highlight-softness'),
-        lightAngle: sourceNumber('glass-light-angle'),
-        refraction: sourceNumber('glass-refraction'),
-        shape: sourceDefaults['glass-shape'],
-        softness: sourceNumber('glass-softness'),
-        speed: sourceNumber('glass-speed'),
+        aberration: 0.61,
+        angle: 31,
+        frequency: 8,
+        highlight: 0.12,
+        highlightSoftness: 0,
+        lightAngle: -90,
+        refraction: 4,
+        shape: 'rounded',
+        softness: 1,
+        speed: 0.15,
       },
     },
     {
       type: 'FilmGrain',
       id: 'film-grain',
       props: {
-        strength: sourceNumber('grain-strength'),
+        strength: 0.05,
       },
     },
   ],
@@ -336,6 +334,21 @@ function clearPresetVideoPreloader() {
   presetVideoPreloader = null;
 }
 
+function clearBackgroundMedia() {
+  clearPresetVideoPreloader();
+  shaderInstance?.update('uploaded-image', { url: '', opacity: 0 });
+  shaderInstance?.update('uploaded-video', { url: '', loop: false, opacity: 0, visible: false });
+  stopMediaAudio();
+
+  if (activeMediaUrl) URL.revokeObjectURL(activeMediaUrl);
+  activeMediaUrl = '';
+
+  const mediaInput = document.querySelector('#base-image-upload');
+  const mediaName = document.querySelector('#uploaded-image-name');
+  if (mediaInput) mediaInput.value = '';
+  if (mediaName) mediaName.textContent = 'No media';
+}
+
 function applyPresetMedia(media) {
   if (!media?.url) return;
 
@@ -387,16 +400,6 @@ function applyPresetMedia(media) {
 
 function getPresetControls() {
   return [...document.querySelectorAll('[data-shader-id], [data-palette-target], [data-custom-control]')];
-}
-
-function applySourcePresetControls() {
-  getPresetControls().forEach((input) => {
-    const value = sourceDefaults[input.id];
-    if (value === undefined) return;
-
-    if (input.type === 'checkbox') input.checked = value === 'true';
-    else input.value = String(value);
-  });
 }
 
 function captureControlState() {
@@ -489,6 +492,16 @@ function loadSavedPresets() {
   }
 }
 
+function getSourcePresetValues() {
+  const values = cloneControlState(defaultControlState);
+
+  Object.entries(PRESET1_DEFAULT.controls).forEach(([id, value]) => {
+    if (Object.prototype.hasOwnProperty.call(values, id)) values[id] = String(value);
+  });
+
+  return values;
+}
+
 function ensureStarterPreset() {
   const existing = savedPresets.find((item) => item.slot === 1);
   let starterWasSeeded = false;
@@ -537,7 +550,7 @@ function ensureStarterPreset() {
     id: 'preset-1',
     name: 'Preset1',
     slot: 1,
-    values: cloneControlState(defaultControlState),
+    values: getSourcePresetValues(),
     media: { ...DEFAULT_PRESET_MEDIA },
   };
 
@@ -647,7 +660,7 @@ function selectPreset(id) {
   selectedPresetBaseline = cloneControlState(target.values);
   applyControlState(target.values);
   if (target.media?.url) applyPresetMedia(target.media);
-  else clearPresetVideoPreloader();
+  else clearBackgroundMedia();
   presetIsDirty = false;
   renderPresetUi();
 }
@@ -811,8 +824,6 @@ function bindRefractionValueInput() {
 }
 
 function bindControlPanel() {
-  applySourcePresetControls();
-
   const panel = document.querySelector('#control-panel');
   const panelToggle = document.querySelector('#toggle-panel');
 
@@ -879,13 +890,7 @@ function bindControlPanel() {
   const resetImageButton = document.querySelector('#reset-image');
 
   const resetBackgroundMedia = () => {
-    shaderInstance?.update('uploaded-image', { url: '', opacity: 0 });
-    shaderInstance?.update('uploaded-video', { url: '', loop: false, opacity: 0, visible: false });
-    stopMediaAudio();
-    if (activeMediaUrl) URL.revokeObjectURL(activeMediaUrl);
-    activeMediaUrl = '';
-    if (mediaInput) mediaInput.value = '';
-    if (mediaName) mediaName.textContent = 'No media';
+    clearBackgroundMedia();
   };
 
   mediaInput?.addEventListener('change', () => {

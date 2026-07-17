@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+public/glasshaus-placeholder.mp4

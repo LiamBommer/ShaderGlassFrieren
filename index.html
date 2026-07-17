@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="description" content="Glasshaus — a creative studio for brands seen through a different light." />
+    <title>Glasshaus - Frieren</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <main class="hero" aria-label="Glasshaus creative studio">
+      <div class="shader-layer" aria-hidden="true">
+        <canvas id="shader-canvas"></canvas>
+      </div>
+
+      <div class="upload-toast" id="upload-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+        <span class="toast-check" aria-hidden="true">✓</span>
+        <span id="toast-message">底图上传成功</span>
+      </div>
+
+      <button
+        class="panel-toggle"
+        id="toggle-panel"
+        type="button"
+        aria-controls="control-panel"
+        aria-expanded="true"
+        aria-label="Collapse parameter panel"
+        title="Collapse parameter panel"
+      >
+        <svg class="panel-toggle-icon panel-toggle-icon-menu" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 6.5h16M4 12h16M4 17.5h16" />
+        </svg>
+        <svg class="panel-toggle-icon panel-toggle-icon-close" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m6 6 12 12M18 6 6 18" />
+        </svg>
+      </button>
+
+      <aside class="control-panel" id="control-panel" aria-label="Live shader controls">
+        <div class="control-panel-header">
+          <div>
+            <p class="panel-eyebrow">Live parameters</p>
+            <h2>Material lab</h2>
+          </div>
+          <div class="panel-header-actions">
+            <span class="panel-count">06 / 06</span>
+            <button class="panel-reset" id="reset-all" type="button" aria-label="Reset all parameters" title="Reset all parameters">
+              <span aria-hidden="true">↺</span>
+            </button>
+          </div>
+        </div>
+        <p class="panel-intro">实时修改材质参数。面板区域可以独立上下滚动，页面内容与 Shader 会保持在下方。</p>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-number">01</span>
+            <div>
+              <h3>Image texture</h3>
+              <p>上传的图片或视频按 cover 铺满画面，但只会在 ChromaFlow 的 hover 区域内出现。</p>
+            </div>
+          </div>
+
+          <div class="control-list">
+            <div class="control-item">
+              <span class="control-topline"><span>Base media</span><output id="uploaded-image-name">No media</output></span>
+              <span class="control-description">选择图片或视频作为底图，保持比例 cover 铺满画面；视频会自动循环播放，并由 ChromaFlow 区域控制显隐。</span>
+              <div class="upload-input-row">
+                <label class="upload-button" for="base-image-upload">Upload image / video</label>
+                <input id="base-image-upload" type="file" accept="image/*,video/*" />
+                <button class="control-reset image-reset" id="reset-image" type="button" aria-label="Reset base media" title="Reset base media">
+                  <span aria-hidden="true">↺</span>
+                </button>
+              </div>
+            </div>
+            <label class="control-item">
+              <span class="control-topline"><span>Video volume</span><output data-output-for="video-volume">20</output></span>
+              <span class="control-description">视频声音音量，范围为 0–100；仅对上传的视频生效。左侧圆形按钮可一键静音或恢复声音。</span>
+              <div class="control-input-row media-volume-row">
+                <button class="mute-toggle is-muted" id="video-mute-toggle" type="button" aria-label="Unmute video sound" aria-pressed="true" title="Unmute video sound">
+                  <svg class="mute-icon mute-icon-on" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 9v6h4l5 4V5L8 9H4Z" />
+                    <path d="M16 9.5a4 4 0 0 1 0 5M18.5 7a7.5 7.5 0 0 1 0 10" />
+                  </svg>
+                  <svg class="mute-icon mute-icon-off" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 9v6h4l5 4V5L8 9H4Z" />
+                    <path d="m17 9 4 6M21 9l-4 6" />
+                  </svg>
+                </button>
+                <input id="video-volume" type="range" min="0" max="100" step="1" value="20" data-custom-control="media-volume" />
+                <input id="video-mute" type="checkbox" data-inline-control="true" data-custom-control="media-mute" aria-label="Mute video sound" checked hidden />
+              </div>
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Bloom opacity</span><output data-output-for="image-opacity">20</output></span>
+              <span class="control-description">ChromaFlow 晕影本身的不透明度，0–100；100 完全遮住底图，0 完全显示底图。</span>
+              <input id="image-opacity" type="range" min="0" max="100" step="1" value="20" data-value-scale="0.01" data-shader-id="cursor-bloom" data-shader-prop="opacity" />
+            </label>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-number">02</span>
+            <div>
+              <h3>Swirl</h3>
+              <p>基础流动底纹，决定画面的整体明暗与旋涡细节。</p>
+            </div>
+          </div>
+
+          <div class="control-list">
+            <label class="control-item">
+              <span class="control-topline"><span>Color A</span><output data-output-for="swirl-color-a">#FFFFFF</output></span>
+              <span class="control-description">底纹的第一种颜色，通常作为高亮或背景主色。</span>
+              <input id="swirl-color-a" type="color" value="#ffffff" data-shader-id="white-swirl" data-shader-prop="colorA" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Color B</span><output data-output-for="swirl-color-b">#F0F0F0</output></span>
+              <span class="control-description">底纹的第二种颜色，控制旋涡中的阴影层次。</span>
+              <input id="swirl-color-b" type="color" value="#f0f0f0" data-shader-id="white-swirl" data-shader-prop="colorB" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Detail</span><output data-output-for="swirl-detail">1.7</output></span>
+              <span class="control-description">旋涡的复杂程度，数值越高，纹理越细密。</span>
+              <input id="swirl-detail" type="range" min="0.5" max="4" step="0.1" value="1.7" data-shader-id="white-swirl" data-shader-prop="detail" />
+            </label>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-number">03</span>
+            <div>
+              <h3>ChromaFlow</h3>
+              <p>跟随鼠标移动的彩色光晕，库内部负责位置与动量追踪。</p>
+            </div>
+          </div>
+
+          <div class="control-list">
+            <label class="control-item">
+              <span class="control-topline"><span>Base color</span><output data-output-for="chroma-base">#FFFFFF</output></span>
+              <span class="control-description">光晕没有明显运动时的基础颜色。</span>
+              <input id="chroma-base" type="color" value="#ffffff" data-shader-id="cursor-bloom" data-shader-prop="baseColor" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Up color</span><output data-output-for="chroma-up">#7F66FF</output></span>
+              <span class="control-description">鼠标向上移动时混入的紫色。</span>
+              <input id="chroma-up" type="color" value="#7f66ff" data-shader-id="cursor-bloom" data-shader-prop="upColor" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Down color</span><output data-output-for="chroma-down">#4642FF</output></span>
+              <span class="control-description">鼠标向下移动时混入的靛蓝色。</span>
+              <input id="chroma-down" type="color" value="#4642ff" data-shader-id="cursor-bloom" data-shader-prop="downColor" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Left color</span><output data-output-for="chroma-left">#56C2FC</output></span>
+              <span class="control-description">鼠标向左移动时混入的天空蓝。</span>
+              <input id="chroma-left" type="color" value="#56c2fc" data-shader-id="cursor-bloom" data-shader-prop="leftColor" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Right color</span><output data-output-for="chroma-right">#5B4FFF</output></span>
+              <span class="control-description">鼠标向右移动时混入的蓝紫色。</span>
+              <input id="chroma-right" type="color" value="#5b4fff" data-shader-id="cursor-bloom" data-shader-prop="rightColor" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Momentum</span><output data-output-for="chroma-momentum">13</output></span>
+              <span class="control-description">光晕跟随鼠标的惯性，越高拖尾越明显。</span>
+              <input id="chroma-momentum" type="range" min="10" max="60" step="1" value="13" data-shader-id="cursor-bloom" data-shader-prop="momentum" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Radius</span><output data-output-for="chroma-radius">3.5</output></span>
+              <span class="control-description">光晕影响范围，数值越高扩散面积越大。</span>
+              <input id="chroma-radius" type="range" min="0" max="5" step="0.1" value="3.5" data-shader-id="cursor-bloom" data-shader-prop="radius" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Dissipation coefficient</span><output data-output-for="chroma-dissipation">0</output></span>
+              <span class="control-description">项目层额外的可见度衰减系数，不修改 ChromaFlow 原生 dt。0 保持原生效果，数值越高，鼠标停止后额外消散越快。</span>
+              <input id="chroma-dissipation" type="range" min="0" max="100" step="1" value="0" data-custom-control="bloom-decay" />
+            </label>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-number">04</span>
+            <div>
+              <h3>FlutedGlass</h3>
+              <p>斜向玻璃肋条，负责折射、色散和材质高光。</p>
+            </div>
+          </div>
+
+          <div class="control-list">
+            <label class="control-item">
+              <span class="control-topline"><span>Shape</span><output data-output-for="glass-shape">rounded</output></span>
+              <span class="control-description">玻璃肋条的截面形状，决定纹理边缘的观感。</span>
+              <select id="glass-shape" data-shader-id="fluted-glass" data-shader-prop="shape">
+                <option value="rounded">Rounded</option>
+                <option value="bars">Bars</option>
+                <option value="waves">Waves</option>
+              </select>
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Angle</span><output data-output-for="glass-angle">31</output></span>
+              <span class="control-description">肋条的倾斜角度，控制画面中的斜向结构。</span>
+              <input id="glass-angle" type="range" min="-90" max="90" step="1" value="31" data-shader-id="fluted-glass" data-shader-prop="angle" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Frequency</span><output data-output-for="glass-frequency">8</output></span>
+              <span class="control-description">单位画面中的玻璃肋条数量，越高越密集。</span>
+              <input id="glass-frequency" type="range" min="2" max="24" step="1" value="8" data-shader-id="fluted-glass" data-shader-prop="frequency" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline">
+                <span>Refraction</span>
+                <input id="glass-refraction-value" class="control-value-input" type="number" min="0" max="8" step="0.01" value="4" data-output-for="glass-refraction" aria-label="Refraction value" />
+              </span>
+              <span class="control-description">折射强度，控制底层光晕被玻璃扭曲的程度。可直接输入，键盘上下键按 0.01 调整，范围为 0–8。</span>
+              <input id="glass-refraction" type="range" min="0" max="8" step="0.01" value="4" data-shader-id="fluted-glass" data-shader-prop="refraction" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Aberration</span><output data-output-for="glass-aberration">0.61</output></span>
+              <span class="control-description">边缘色散强度，越高 RGB 分离越明显。</span>
+              <input id="glass-aberration" type="range" min="0" max="1" step="0.01" value="0.61" data-shader-id="fluted-glass" data-shader-prop="aberration" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Softness</span><output data-output-for="glass-softness">1</output></span>
+              <span class="control-description">肋条从中心到边缘的过渡柔和度。</span>
+              <input id="glass-softness" type="range" min="0" max="1" step="0.01" value="1" data-shader-id="fluted-glass" data-shader-prop="softness" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Speed</span><output data-output-for="glass-speed">0.15</output></span>
+              <span class="control-description">玻璃纹理自身的漂移速度，0 表示静止。</span>
+              <input id="glass-speed" type="range" min="-1" max="1" step="0.01" value="0.15" data-shader-id="fluted-glass" data-shader-prop="speed" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Highlight</span><output data-output-for="glass-highlight">0.12</output></span>
+              <span class="control-description">玻璃表面的反光强度，增加材质的亮面。</span>
+              <input id="glass-highlight" type="range" min="0" max="1" step="0.01" value="0.12" data-shader-id="fluted-glass" data-shader-prop="highlight" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Highlight softness</span><output data-output-for="glass-highlight-softness">0</output></span>
+              <span class="control-description">高光的扩散宽度，0 是锐利高光，1 更柔和。</span>
+              <input id="glass-highlight-softness" type="range" min="0" max="1" step="0.01" value="0" data-shader-id="fluted-glass" data-shader-prop="highlightSoftness" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Light angle</span><output data-output-for="glass-light-angle">-90</output></span>
+              <span class="control-description">高光的入射方向，控制玻璃亮边出现的位置。</span>
+              <input id="glass-light-angle" type="range" min="-90" max="90" step="1" value="-90" data-shader-id="fluted-glass" data-shader-prop="lightAngle" />
+            </label>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <div class="section-heading">
+            <span class="section-number">05</span>
+            <div>
+              <h3>Main palette</h3>
+              <p>页面的主色变量，同时会同步影响文字和部分 Shader 基础色。</p>
+            </div>
+          </div>
+
+          <div class="control-list">
+            <label class="control-item">
+              <span class="control-topline"><span>Canvas</span><output data-output-for="palette-canvas">#FFFFFF</output></span>
+              <span class="control-description">页面底色与 Swirl 的基础底色。</span>
+              <input id="palette-canvas" type="color" value="#ffffff" data-palette-target="canvas" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Ink</span><output data-output-for="palette-ink">#16161D</output></span>
+              <span class="control-description">导航、标题和按钮等主要文字颜色。</span>
+              <input id="palette-ink" type="color" value="#16161d" data-palette-target="ink" />
+            </label>
+            <label class="control-item">
+              <span class="control-topline"><span>Indigo accent</span><output data-output-for="palette-indigo">#4642FF</output></span>
+              <span class="control-description">品牌强调色，同时用于标题斜体、星号和 CTA hover。</span>
+              <input id="palette-indigo" type="color" value="#4642ff" data-palette-target="indigo" />
+            </label>
+          </div>
+        </section>
+
+        <section class="control-section control-section-last">
+          <div class="section-heading">
+            <span class="section-number">06</span>
+            <div>
+              <h3>FilmGrain</h3>
+              <p>最后叠加的颗粒层，让纯色和玻璃材质更有胶片质感。</p>
+            </div>
+          </div>
+
+          <div class="control-list">
+            <label class="control-item">
+              <span class="control-topline"><span>Strength</span><output data-output-for="grain-strength">0.05</output></span>
+              <span class="control-description">颗粒噪声强度，建议保持较低以免影响文字阅读。</span>
+              <input id="grain-strength" type="range" min="0" max="0.3" step="0.01" value="0.05" data-shader-id="film-grain" data-shader-prop="strength" />
+            </label>
+          </div>
+        </section>
+
+        <section class="preset-section">
+          <div class="section-heading">
+            <span class="section-number">PR</span>
+            <div>
+              <h3>Presets</h3>
+              <p>保存和切换当前 Shader 参数。Default 是只读的内置初始配置。</p>
+            </div>
+          </div>
+
+          <div class="preset-list" id="preset-list" aria-label="Saved presets"></div>
+
+          <div class="preset-actions" id="preset-actions" hidden>
+            <button class="preset-action" id="save-preset" type="button">保存预设</button>
+            <button class="preset-action preset-action-primary" id="save-new-preset" type="button">保存为新预设</button>
+          </div>
+
+          <button class="preset-delete" id="delete-preset" type="button" hidden>删除当前预设</button>
+          <p class="preset-status" id="preset-status" aria-live="polite">Default · read only</p>
+        </section>
+      </aside>
+
+      <!--
+      <header class="site-header reveal" style="--reveal-delay: 0s">
+        <a class="wordmark" href="#" aria-label="Glasshaus home">
+          Glasshaus <span aria-hidden="true">*</span>
+        </a>
+
+        <nav class="primary-nav" aria-label="Primary navigation">
+          <a href="#">Work</a>
+          <a href="#">Studio</a>
+          <a href="#">Journal</a>
+        </nav>
+
+        <a class="project-cta" href="#">Start a project</a>
+      </header>
+      -->
+
+      <section class="hero-content">
+        <div class="hero-copy">
+          <h1 class="hero-title reveal" style="--reveal-delay: 0.25s">
+            The Height of Magic <em>Frieren</em>
+          </h1>
+        </div>
+
+        <div class="client-strip reveal" style="--reveal-delay: 0.55s">
+          <p>Modified by</p>
+          <ul>
+            <li>Kyle</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
